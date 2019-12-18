@@ -1,6 +1,13 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+$tcname = "鳳凰";
+$engname = "Fung-Wong";
+$tcno = "1923";
+
+// Display report description [0 no, 1 yes]
+$report_mode = 1;
+
 // mutiple records
 $j = 0;
 $dt = array();
@@ -8,7 +15,8 @@ $y = array();
 $x = array();
 $p = array();
 
-$url="http://www.typhoon2000.ph/multi/log.php?name=FUNG-WONG_2019";
+#$url="http://www.typhoon2000.ph/multi/log.php?name=FUNG-WONG_2019";
+$url="http://localhost:8080/cde/temp.txt";
 $page = file_get_contents($url);
 $lines = explode("\n",$page);
 
@@ -88,6 +96,8 @@ for ($i=0;$i<=count($lines);$i++){
 print "<table style=\"border:1px solid;padding:5px;\" rules=all cellpadding=5>";
 print "<tr><th>香港時間</th><th>北緯</th><th>東經</th><th>強度<br>(km/h)</th><th>等級</th><th>趨勢</th></tr>";
 
+$tot_spd = $tot_time = $named = 0;
+
 for ($i=0;$i<=$j-1;$i++){
 	$dis = $time_int = $speed = 0;
 	$trend = "";	
@@ -110,6 +120,9 @@ for ($i=0;$i<=$j-1;$i++){
 			} else {
 				$trend = "時速 $speed 公里向 $direction 移動(共 $time_int 小時)";
 			};
+			// Summary stat
+			$tot_spd = $tot_spd + ($speed * $time_int);
+			$tot_time += $time_int;
 						
 		}
 		
@@ -117,23 +130,64 @@ for ($i=0;$i<=$j-1;$i++){
 		$datetime = utctohkt($dt[$i]);
 			
 		print "<tr><td>$datetime</td><td>$y[$i] N</td><td>$x[$i] E</td><td>$p[$i]</td><td>$pg[$i]</td><td>$trend</td></tr>";
+		
+		// Report description
+		if ($report_mode == 1)
+		{
+			// Intensity Change
+			if ($pg[$i] != $pg[$i-1])
+			{
+				if ($p[$i] < $p[$i-1])
+				{
+					print "$tcname 在 $datetime 減弱為 $pg[$i]<br>";
+				} else {
+					if ($named == 0)
+					{
+						print "熱帶低氣壓在 $datetime 增強為 $pg[$i]，日本氣象廳把其命名為 $tcname （ $engname ），國際編號 $tcno<br>";
+						$named = 1;
+					} else {
+						print "$tcname 在 $datetime 增強為 $pg[$i]<br>";
+					}
+				}
+			}
+		}
 	}
 }
+
+		// Report description
+		if ($report_mode == 1)
+		{
+			$k = $i-1;
+		// Current status
+			print "<br><br>
+			在 ".$datetime."，".$pg[$k].$tcname."集結在 XXX，香港的 XXXX；即在北緯 $y[$k] 度，東經 $x[$k] 度附近。<br>
+			估計".$tcname."的中心最高持續風力為每小時 $p[$k] 公里，中心附近最低海平面氣壓約為 XXX hPa。
+			<br><br>			
+			在過去 $time_int 小時，".$tcname."平均以時速 $speed 公里向".$direction."移動，趨向 XXX 附近海域。<br><br>";
+			
+		// Latest trend
+		}
 	
 print "</table>";
 
 // Life time
+print "<br>生命週期:";
+print "$tot_time 小時 / ";
+$tot_day = round($tot_time/24)+1;
+print "$tot_day 日<br>";
 
 // Overall average moving speed
+print "平均移動:";
+$avg_spd = round($tot_spd/$tot_time);
+print "時速 $avg_spd 公里<br>";
 
 // Maximum intensity at
+print "最大強度:";
+$max_spd = max($p);
+$tcgrade = tcgrade($max_spd);
+print "時速 $max_spd 公里 ($tcgrade)<br>";
 
 // Super typhoon sustain for
-
-// -- Report use --//
-// Grade change description
-// Current status
-// Latest trend
 
 print "<pre>$content</pre>";
 
@@ -141,9 +195,9 @@ print "<pre>$content</pre>";
 // ------------- functions ====================
 function tcgrade($pw)
 {
-	if ($pw<65){$tcgrade="熱帶低氣壓";}
-		elseif (($pw>=65)and($pw<90)){$tcgrade="熱帶風暴";}
-		elseif (($pw>=90)and($pw<118)){$tcgrade="強烈熱帶風暴";}
+	if ($pw<63){$tcgrade="熱帶低氣壓";}
+		elseif (($pw>=63)and($pw<88)){$tcgrade="熱帶風暴";}
+		elseif (($pw>=87)and($pw<118)){$tcgrade="強烈熱帶風暴";}
 		elseif (($pw>=118)and($pw<180)){$tcgrade="颱風";}
 		elseif (($pw>=180)and($pw<230)){$tcgrade="強烈颱風";}
 		elseif ($pw>=230){$tcgrade="超級颱風";}
