@@ -1,12 +1,16 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+include 'dis.php';
+
 $tcname = "鳳凰";
 $engname = "Fung-Wong";
 $tcno = "1923";
 
 // Display report description [0 no, 1 yes]
-$report_mode = 1;
+$report_mode = 0;
+
+$debug=0;
 
 // mutiple records
 $j = 0;
@@ -19,8 +23,6 @@ $p = array();
 $url="http://localhost:8080/cde/temp.txt";
 $page = file_get_contents($url);
 $lines = explode("\n",$page);
-
-
 	
 for ($i=0;$i<=count($lines);$i++){
 	if (preg_match("/function preload/", $lines[$i])){
@@ -92,9 +94,10 @@ for ($i=0;$i<=count($lines);$i++){
 }
 
 // print table
-
+print "<li><a href = #$tcno>$tcname $engname ($tcno)</a></li>";
+print "<h3 id=$tcno>$tcname $engname ($tcno)</h3>";
 print "<table style=\"border:1px solid;padding:5px;\" rules=all cellpadding=5>";
-print "<tr><th>香港時間</th><th>北緯</th><th>東經</th><th>強度<br>(km/h)</th><th>等級</th><th>趨勢</th></tr>";
+print "<tr><th>香港時間</th><th>北緯</th><th>東經</th><th>強度<br>(km/h)</th><th>等級</th><th>趨勢</th><th>位置</th></tr>";
 
 $tot_spd = $tot_time = $named = 0;
 
@@ -123,13 +126,15 @@ for ($i=0;$i<=$j-1;$i++){
 			// Summary stat
 			$tot_spd = $tot_spd + ($speed * $time_int);
 			$tot_time += $time_int;
+			
+			$cp_gps = findcp($y[$i],$x[$i]);
 						
 		}
 		
 		// UTC to HKT
 		$datetime = utctohkt($dt[$i]);
 			
-		print "<tr><td>$datetime</td><td>$y[$i] N</td><td>$x[$i] E</td><td>$p[$i]</td><td>$pg[$i]</td><td>$trend</td></tr>";
+		print "<tr><td>$datetime</td><td>$y[$i] N</td><td>$x[$i] E</td><td>$p[$i]</td><td>$pg[$i]</td><td>$trend</td><td>".$cp_gps['area']."</td></tr>";
 		
 		// Report description
 		if ($report_mode == 1)
@@ -158,12 +163,25 @@ for ($i=0;$i<=$j-1;$i++){
 		if ($report_mode == 1)
 		{
 			$k = $i-1;
+			// TC from CPA
+			$cp_gps = findcp($y[$k],$x[$k]);
+			// TC from HK
+			$hk_gps = findhk($y[$k],$x[$k]);
+			// Calculate Pressure
+			$pre = tpre($p[$k]);
+			// Calculate Gust
+			$vg = round((1.58*$p[$k]) + 10);
+			// Intensity change
+			$pchg = inten_chg_desc($p[$k],$p[$k-1],$time_int);
+			
 		// Current status
-			print "<br><br>
-			在 ".$datetime."，".$pg[$k].$tcname."集結在 XXX，香港的 XXXX；即在北緯 $y[$k] 度，東經 $x[$k] 度附近。<br>
-			估計".$tcname."的中心最高持續風力為每小時 $p[$k] 公里，中心附近最低海平面氣壓約為 XXX hPa。
+			print "<br><br>在".$datetime."，<br>"
+			.$pg[$k].$tcname."集結在".$cp_gps['name']."的".$cp_gps['dir']."約".$cp_gps['dis']."公里，".
+			$hk_gps['name']."的".$hk_gps['dir']."約".$hk_gps['dis']."公里，<br>".
+			"即在北緯 $y[$k] 度，東經 $x[$k] 度附近。<br>
+			估計".$tcname."的中心最高持續風力為時速 $p[$k] 公里，陣風可達時速".$vg."，<br>中心附近最低海平面氣壓約為 ".$pre." hPa。
 			<br><br>			
-			在過去 $time_int 小時，".$tcname."平均以時速 $speed 公里向".$direction."移動，趨向 XXX 附近海域。<br><br>";
+			在過去 $time_int 小時，".$tcname.$pchg."，並以平均以時速 $speed 公里向".$direction."移動，趨向".$cp_gps['area']."。<br><br>";
 			
 		// Latest trend
 		}
@@ -186,10 +204,11 @@ print "最大強度:";
 $max_spd = max($p);
 $tcgrade = tcgrade($max_spd);
 print "時速 $max_spd 公里 ($tcgrade)<br>";
+print "<a href = $url target=_blank>[Data source]</a>";
 
 // Super typhoon sustain for
 
-print "<pre>$content</pre>";
+if($debug==1){print "<pre>$content</pre>";}
 
 
 // ------------- functions ====================
@@ -259,125 +278,38 @@ function differenceInHours($t1,$t2)
 	return $difference;
 }
 
-/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-/*::                                                                         :*/
-/*::  This routine calculates the distance between two points (given the     :*/
-/*::  latitude/longitude of those points). It is being used to calculate     :*/
-/*::  the distance between two locations using GeoDataSource(TM) Products    :*/
-/*::                                                                         :*/
-/*::  Definitions:                                                           :*/
-/*::    South latitudes are negative, east longitudes are positive           :*/
-/*::                                                                         :*/
-/*::  Passed to function:                                                    :*/
-/*::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :*/
-/*::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :*/
-/*::    unit = the unit you desire for results                               :*/
-/*::           where: 'M' is statute miles (default)                         :*/
-/*::                  'K' is kilometers                                      :*/
-/*::                  'N' is nautical miles                                  :*/
-/*::  Worldwide cities and other features databases with latitude longitude  :*/
-/*::  are available at https://www.geodatasource.com                          :*/
-/*::                                                                         :*/
-/*::  For enquiries, please contact sales@geodatasource.com                  :*/
-/*::                                                                         :*/
-/*::  Official Web site: https://www.geodatasource.com                        :*/
-/*::                                                                         :*/
-/*::         GeoDataSource.com (C) All Rights Reserved 2018                  :*/
-/*::                                                                         :*/
-/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
-function distance($lat1, $lon1, $lat2, $lon2, $unit) {
-  if (($lat1 == $lat2) && ($lon1 == $lon2)) {
-    return 0;
-  }
-  else {
-    $theta = $lon1 - $lon2;
-    $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-    $dist = acos($dist);
-    $dist = rad2deg($dist);
-    $miles = $dist * 60 * 1.1515;
-    $unit = strtoupper($unit);
-
-    if ($unit == "K") {
-      return ($miles * 1.609344);
-    } else if ($unit == "N") {
-      return ($miles * 0.8684);
-    } else {
-      return $miles;
-    }
-  }
+function tpre($b)
+{
+if (($b>40)and($b<= 55)) {$dw=1000;}
+if (($b> 55)and($b<= 65)) {$dw=997;}
+if (($b> 65)and($b<= 85)) {$dw=991;}
+if (($b> 85)and($b<= 100)) {$dw=984;}
+if (($b> 100)and($b<=120)) {$dw=976;}
+if (($b>120)and($b<=140)) {$dw=966;}
+if (($b>140)and($b<=165)) {$dw=954;}
+if (($b>165)and($b<=185)) {$dw=941;}
+if (($b>185)and($b<=210)) {$dw=927;}
+if (($b>210)and($b<=235)) {$dw=914;}
+if (($b>235)and($b<=260)) {$dw=898;}
+if (($b>260)and($b<=290)) {$dw=879;}
+if (($b>290)and($b<=315)) {$dw=858;}
+return $dw;
 }
 
-
-function getDirection($lat1, $lon1, $lat2, $lon2) {
-   //difference in longitudinal coordinates
-   $dLon = deg2rad($lon2) - deg2rad($lon1);
- 
-   //difference in the phi of latitudinal coordinates
-   $dPhi = log(tan(deg2rad($lat2) / 2 + pi() / 4) / tan(deg2rad($lat1) / 2 + pi() / 4));
- 
-   //we need to recalculate $dLon if it is greater than pi
-   if(abs($dLon) > pi()) {
-      if($dLon > 0) {
-         $dLon = (2 * pi() - $dLon) * -1;
-      }
-      else {
-         $dLon = 2 * pi() + $dLon;
-      }
-   }
-   //return the angle, normalized
-   $bearing = (rad2deg(atan2($dLon, $dPhi)) + 360) % 360;
-   
-   $tmp = round($bearing / 22.5);
-   switch($tmp) {
-      case 1:
-         $direction = "東北偏北";
-         break;
-      case 2:
-         $direction = "東北";
-         break;
-      case 3:
-         $direction = "東北偏東";
-         break;
-      case 4:
-         $direction = "東";
-         break;
-      case 5:
-         $direction = "東南偏東";
-         break;
-      case 6:
-         $direction = "東南";
-         break;
-      case 7:
-         $direction = "東南偏南";
-         break;
-      case 8:
-         $direction = "南";
-         break;
-      case 9:
-         $direction = "西南偏南";
-         break;
-      case 10:
-         $direction = "西南";
-         break;
-      case 11:
-         $direction = "西南偏西";
-         break;
-      case 12:
-         $direction = "西";
-         break;
-      case 13:
-         $direction = "西北偏西";
-         break;
-      case 14:
-         $direction = "西北";
-         break;
-      case 15:
-         $direction = "西北偏北";
-         break;
-      default:
-         $direction = "北";
-   }
-   return $direction;   
+function inten_chg_desc($p1,$p2,$t)
+{
+	// p1: current intensity
+	// p2: pervious intensity
+	// t: time interval
+	$change=(($p1-$p2)/$t)*24;
+	if ($change >= 55){$desc = "迅速增強";}
+	if ($change >= 10 and $change < 55){$desc = "呈增強之勢";}
+	if ($change >= 0 and $change < 10){$desc = "稍為增強";}
+	if ($change >= -10 and $change < 10){$desc = "稍為減弱";}
+	if ($change > -37 and $change < -10){$desc = "呈減弱之勢";}
+	if ($change <= -37){$desc = "迅速減弱";}
+	 
+	return $desc;
 }
 
 ?>
