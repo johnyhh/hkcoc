@@ -1,59 +1,259 @@
 <?php
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-$debug = 1;
-$x = 21.3;
-$y = 115.4;
+// HKCOC all right reserved
+// PHP library for calculate TC trend and 
+// it's relative position from cities
 
-if($debug==1){print "Input $x N $y E<hr>";}
+function findcp($x, $y)
+{
+	$cp = array();	
+	$cp['cp1'] = array( 
+		"name" => "香港",  
+		"lat" => 22.3,  
+		"long" => 114.2, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "華南沿岸"
+		); 
+		
+	$cp['cp2'] = array( 
+		"name" => "那霸",  
+		"lat" => 26.1,  
+		"long" => 127.6, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "沖繩附近海域"
+		); 
+		
+	$cp['cp3'] = array( 
+		"name" => "馬尼拉",  
+		"lat" => 14.5,  
+		"long" => 121.1, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "菲律賓附近海域"
+		); 	
+	 
+	$cp['cp4'] = array( 
+		"name" => "東沙",  
+		"lat" => 20.7,  
+		"long" => 116.7, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "華海北部"
+		);  
+		
+	$cp['cp5'] = array( 
+		"name" => "海口",  
+		"lat" => 20.1,  
+		"long" => 110.5, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "海南島附近海域"
+		);  	
+		
+	$cp['cp6'] = array( 
+		"name" => "上海",  
+		"lat" => 31.2,  
+		"long" => 121.5, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "東海"
+		);  	
+		
+	$cp['cp7'] = array( 
+		"name" => "汕頭",  
+		"lat" => 23.4,  
+		"long" => 119.7, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "廣東沿岸"
+		);  	
+		
+	$cp['cp8'] = array( 
+		"name" => "高雄",  
+		"lat" => 22.6,  
+		"long" => 120.2, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "台灣附近海域"
+		);  	
+		
+	$cp['cp9'] = array( 
+		"name" => "台北",  
+		"lat" => 25.1,  
+		"long" => 121.6, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "台灣附近海域"
+		);  	
 
+	$cp['cp10'] = array( 
+		"name" => "硫磺島",  
+		"lat" => 24.8,  
+		"long" => 141.3, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "小笠原群島附近海域"
+		);  
 
-$cp = array(); 
-  
-$cp['cp1'] = array( 
-    "name" => "香港",  
-    "lat" => 22.3,  
-    "long" => 114.2, 
-    "dis" => 0,
-	"dir" => "",
-	"area" => "華南沿岸"
-	); 
-	
-$cp['cp2'] = array( 
-    "name" => "那霸",  
-    "lat" => 26.1,  
-    "long" => 127.6, 
-    "dis" => 0,
-	"dir" => "",
-	"area" => "琉球群島"
-	); 
- 
-// Loop via the mutidemension associate array 
-foreach ($cp as $key => $value) { 
-    if($debug==1){echo "<br>". $key . "<br>";} 
-    foreach ($value as $sub_key => $sub_val) {                  
-        if($debug==1){
-			echo $sub_key . " = " . $sub_val . "<br>"; 
-		}
-    }
+	$cp['cp11'] = array( 
+		"name" => "鹿兒島",  
+		"lat" => 31.7,  
+		"long" => 130.7, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "日本附近海域"
+		); 	
+		
+	$cp['cp12'] = array( 
+		"name" => "東京",  
+		"lat" => 36.7,  
+		"long" => 139.8, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "日本附近海域"
+		); 		
+	 
+	$cp['cp13'] = array( 
+		"name" => "漢城",  
+		"lat" => 37.5,  
+		"long" => 127.0, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "朝鮮半島附近海域"
+		); 	 
+		
+	$cp['cp14'] = array( 
+		"name" => "胡志明市",  
+		"lat" => 10.8,  
+		"long" => 106.7, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "越南附近海域"
+		); 	
 
-	// Process
-	$cp[$key]['dis'] = round(distance($cp[$key]['lat'], $cp[$key]['long'], $x, $y, "k"));	
-	$cp[$key]['dir'] = getDirection($cp[$key]['lat'], $cp[$key]['long'], $x, $y);		
-} 
+	$cp['cp15'] = array( 
+		"name" => "特魯克",  
+		"lat" => 7.4,  
+		"long" => 151.8, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "太平洋米克羅尼西亞一帶海域"
+		); 	
+		
+	$cp['cp16'] = array( 
+		"name" => "關島",  
+		"lat" => 13.4,  
+		"long" => 144.9, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "太平洋米克羅尼西亞一帶海域"
+		); 	
+		
+	$cp['cp17'] = array( 
+		"name" => "雅普島",  
+		"lat" => 9.5,  
+		"long" => 138.2, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "太平洋米克羅尼西亞一帶海域"
+		); 	
+		
+	$cp['cp18'] = array( 
+		"name" => "威克島",  
+		"lat" => 19.3,  
+		"long" => 166.7, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "太平洋馬紹爾群島一帶海域"
+		); 	
+		
+		return calcp($x, $y, $cp);		
+}		
 
-if($debug==1){
-	print "<hr>";
+function findhk($x, $y)
+{
+	$cp = array();	
+	$cp['cp1'] = array( 
+		"name" => "香港",  
+		"lat" => 22.3,  
+		"long" => 114.2, 
+		"dis" => 0,
+		"dir" => "",
+		"area" => "華南沿岸"
+		); 
+		
+		return calcp($x, $y, $cp);		
+}	
+
+function calcp($x, $y, $cp)
+{
+	 
+	$mindis = array();	 
+	 	 
+	// Loop via the mutidemension associate array 
 	foreach ($cp as $key => $value) { 
-		echo "<br>". $key . "<br>"; 
+		if($debug==2){echo "<br>". $key . "<br>";} 
 		foreach ($value as $sub_key => $sub_val) {                  
-			echo $sub_key . " = " . $sub_val . "<br>"; 
+			if($debug==2){
+				echo $sub_key . " = " . $sub_val . "<br>"; 
+			}
 		}
+
+		// Process
+		$cp[$key]['dis'] = round(distance($cp[$key]['lat'], $cp[$key]['long'], $x, $y, "k"));	
+		$cp[$key]['dir'] = getDirection($cp[$key]['lat'], $cp[$key]['long'], $x, $y);		
 	} 
+
+	if($debug==2){
+		print "<hr>";
+		foreach ($cp as $key => $value) {
+				echo "<br>". $key . "<br>"; 		
+				foreach ($value as $sub_key => $sub_val) {                
+					echo $sub_key . " = " . $sub_val . "<br>"; 			
+			}
+		}
+	}
+
+	// find CP
+	foreach ($cp as $array){
+		if (!isset($minarr)) $minarr = $array; 
+		elseif ($array['dis'] < $minarr['dis']) $minarr = $array; 
+	}
+
+	if($debug==2){print "<br>最近城市 = ".$minarr['name']."<br>";}
+	
+	return $minarr;
 }
-    
-   
-   
+ 
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+/*::                                                                         :*/
+/*::  This routine calculates the distance between two points (given the     :*/
+/*::  latitude/longitude of those points). It is being used to calculate     :*/
+/*::  the distance between two locations using GeoDataSource(TM) Products    :*/
+/*::                                                                         :*/
+/*::  Definitions:                                                           :*/
+/*::    South latitudes are negative, east longitudes are positive           :*/
+/*::                                                                         :*/
+/*::  Passed to function:                                                    :*/
+/*::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :*/
+/*::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :*/
+/*::    unit = the unit you desire for results                               :*/
+/*::           where: 'M' is statute miles (default)                         :*/
+/*::                  'K' is kilometers                                      :*/
+/*::                  'N' is nautical miles                                  :*/
+/*::  Worldwide cities and other features databases with latitude longitude  :*/
+/*::  are available at https://www.geodatasource.com                          :*/
+/*::                                                                         :*/
+/*::  For enquiries, please contact sales@geodatasource.com                  :*/
+/*::                                                                         :*/
+/*::  Official Web site: https://www.geodatasource.com                        :*/
+/*::                                                                         :*/
+/*::         GeoDataSource.com (C) All Rights Reserved 2018                  :*/
+/*::                                                                         :*/
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/ 
 function distance($lat1, $lon1, $lat2, $lon2, $unit) {
   if (($lat1 == $lat2) && ($lon1 == $lon2)) {
     return 0;
