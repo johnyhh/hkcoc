@@ -1,17 +1,69 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+include 'config2.php';
+//  $link = mysqli_connect("localhost", "user", "password", "dbname");
+//  mysqli_query($link,"SET NAMES 'utf8'");
+
 include 'dis.php';
 
-$tcname = "鳳凰";
-$engname = "Fung-Wong";
-$tcno = "1923";
+header('Content-Type: text/html; charset=utf8');
+
+# This version use later verion Mysql
+# Good for use in localhost or newer server
+
+?>
+
+<form method="post" action="best_track2.php">
+
+          <label>
+
+          <input type="text" name="fr">
+		  <input type="text" name="to">
+
+          </label>
+
+          　
+
+          <input type="submit">
+
+        </form>
+
+
+<?php
+
+print "Query ".$_POST["fr"] ."-". $_POST["to"] . "<hr>";  
+  
+//$tcname = "巴蓬";
+//$engname = "Phanfone ";
+//$tcno = "1929";
 
 // Display report description [0 no, 1 yes]
 $report_mode = 0;
 
 $debug=0;
 
+$tclist = array();
+$tclist = query_db($_POST["fr"],$_POST["to"],$link);
+
+foreach ($tclist as $key) {
+//	if($debug==1){	echo "<br>". $key['tcno'], $key['chiname'], strtoupper($key['engname']) . "<br>"; }
+	$tcno = $key['tcno'];
+	$yr = substr($tcno,0,2);
+	$engname = strtoupper($key['engname']);
+	$tcname = mb_convert_encoding($key['chiname'],"utf8","auto");
+	
+	if($debug==1){	echo "<br>". "http://www.typhoon2000.ph/multi/log.php?name=".$engname."_20".$yr ."<br>"; }
+	print "<li><a href = #$tcno>$tcname $engname ($tcno)</a></li>";
+	
+}
+
+foreach ($tclist as $key) {
+	$tcno = $key['tcno'];
+	$yr = substr($tcno,0,2);
+	$engname = strtoupper($key['engname']);
+	$tcname = mb_convert_encoding($key['chiname'],"utf8","auto");
+	
 // mutiple records
 $j = 0;
 $dt = array();
@@ -19,8 +71,8 @@ $y = array();
 $x = array();
 $p = array();
 
-#$url="http://www.typhoon2000.ph/multi/log.php?name=FUNG-WONG_2019";
-$url="http://localhost:8080/cde/temp.txt";
+$url="http://www.typhoon2000.ph/multi/log.php?name=".$engname."_20".$yr;
+#$url="http://localhost:8080/cde/temp.txt";
 $page = file_get_contents($url);
 $lines = explode("\n",$page);
 	
@@ -50,7 +102,7 @@ for ($i=0;$i<=count($lines);$i++){
 				$datetime = $yrmn.$arr[1]; $lat += $arr[2]; $long += $arr[3]; $pw += $arr[4] ; $cnt++;
 			if($debug==1){print "JTWC: $yrmn.$arr[1] | $arr[2] N | $arr[3] E | $arr[4]<br>";}
 			}
-			// JMA:\n041800Z 18.8N 152.3E 80KT\n => *1.1
+			// JMA:\n041800Z 18.8N 152.3E 80KT\n => *1.1  JMA:\n010600Z
 		    if (preg_match('/JMA\:....(..)..Z ([0-9]+.[0-9])N ([0-9]+.[0-9])E ([0-9]+)KT/', $lines[$i], $arr)){
 				$datetime = $yrmn.$arr[1]; $lat += $arr[2]; $long += $arr[3]; $pw += floor($arr[4] * 1.1); $cnt++;
 			if($debug==1){print "JMA: $yrmn.$arr[1] | $arr[2] N | $arr[3] E | $arr[4]<br>";}
@@ -94,7 +146,6 @@ for ($i=0;$i<=count($lines);$i++){
 }
 
 // print table
-print "<li><a href = #$tcno>$tcname $engname ($tcno)</a></li>";
 print "<h3 id=$tcno>$tcname $engname ($tcno)</h3>";
 print "<table style=\"border:1px solid;padding:5px;\" rules=all cellpadding=5>";
 print "<tr><th>香港時間</th><th>北緯</th><th>東經</th><th>強度<br>(km/h)</th><th>等級</th><th>趨勢</th><th>位置</th></tr>";
@@ -119,9 +170,9 @@ for ($i=0;$i<=$j-1;$i++){
 			
 			// Output sentences
 			if ($speed == 0){
-				$trend = "停留不動 (共 $time_int 小時)";
+				$trend = "停留不動<br> (共 $time_int 小時)";
 			} else {
-				$trend = "時速 $speed 公里向 $direction 移動(共 $time_int 小時)";
+				$trend = "$direction $speed km/h<br>(共 $time_int 小時)";
 			};
 			// Summary stat
 			$tot_spd = $tot_spd + ($speed * $time_int);
@@ -209,6 +260,7 @@ print "<a href = $url target=_blank>[Data source]</a>";
 // Super typhoon sustain for
 
 if($debug==1){print "<pre>$content</pre>";}
+}
 
 
 // ------------- functions ====================
@@ -225,9 +277,12 @@ function tcgrade($pw)
 
 function utctohkt($time)
 {
-  // 2019112309
+  // 2019112309  
+  // 2019010512 
   preg_match('/(....)(..)(..)(..)/', $time, $d);
   $yr = $d[1]; $mth = $d[2]; $date = $d[3]; $hr = $d[4];
+  
+  $mth++;$mth--;
   
   $maxdate = array(0,31,28,31,30,31,30,31,31,30,31,30,31);
   $hr += 8;
@@ -258,7 +313,7 @@ function utctohkt($time)
  if ($wday == 6){$cwday = "六";}
  if ($wday == 7){$cwday = "日";} 
   
-  $hkt = "$mth 月 $date 日($cwday) $hr 時";  
+  $hkt = "$mth 月 $date 日<br>(週$cwday) $hr 時";  
 #  $hkt = "$pm$hr時";
   return $hkt;
 }
@@ -310,6 +365,42 @@ function inten_chg_desc($p1,$p2,$t)
 	if ($change <= -37){$desc = "迅速減弱";}
 	 
 	return $desc;
+}
+
+
+function query_db($fr,$to,$link)
+{
+	if (($fr == "" or $to == "")){
+		print "Error! input should not be blank";
+		exit;
+	} elseif (($fr < 0 or $fr > 9999) or ($to < 0 or $to > 9999)) 
+	{
+		print "Error! input out of range";
+		exit;
+	} else {
+		$dbquery = "select * from tc_list where tcno >= $fr and tcno <= $to;";
+		$result = mysqli_query($link,$dbquery);
+		$number_of_rows = mysqli_num_rows($result);
+		if ($number_of_rows == 0)
+		{
+			print "Record not found";
+			exit;
+		}
+
+		for ( $l=0; $l<=$number_of_rows-1; $l++ ) 
+		{
+			if (mysqli_data_seek($result, $l)) {	
+			list($tcno, $chiname, $engname) = mysqli_fetch_row($result);
+				
+				$tc[$l] = array( 
+					"tcno" => $tcno,  
+					"chiname" => $chiname,  
+					"engname" => $engname
+				); 
+			}
+		}
+	}
+	return $tc;
 }
 
 ?>
