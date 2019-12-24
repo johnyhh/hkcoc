@@ -146,7 +146,8 @@ for ($i=0;$i<=count($lines);$i++){
 }
 
 // print table
-print "<h3 id=$tcno>$tcname $engname ($tcno)</h3>";
+print "<h3 id=$tcno>$tcname $engname ($tcno)</h3><br> ";
+print "<img src = http://agora.ex.nii.ac.jp/digital-typhoon/map-s/wnp/20".$tcno.".png>";
 print "<table style=\"border:1px solid;padding:5px;\" rules=all cellpadding=5>";
 print "<tr><th>香港時間</th><th>北緯</th><th>東經</th><th>強度<br>(km/h)</th><th>等級</th><th>趨勢</th><th>位置</th></tr>";
 
