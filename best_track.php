@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-include 'config2.php';
+include 'config_fs.php';
 //  $link = mysqli_connect("localhost", "user", "password", "dbname");
 //  mysqli_query($link,"SET NAMES 'utf8'");
 
@@ -14,12 +14,12 @@ header('Content-Type: text/html; charset=utf8');
 
 ?>
 
-<form method="post" action="best_track2.php">
+<form method="post" action="best_track.php">
 
           <label>
 
-          <input type="text" name="fr">
-		  <input type="text" name="to">
+          <input type="text" name="fr" value="<?php print $_GET['fr'] ?>">
+		  <input type="text" name="to" value="<?php print $_GET['to'] ?>">
 
           </label>
 
