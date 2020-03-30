@@ -5,16 +5,10 @@ include 'config_fs.php';
 include 'dis.php';
 
 header('Content-Type: text/html; charset=utf8');
-  
-$tcname = "天鵝";
-$engname = "GONI";
-$tcno = "1510";
 
 // Display report description [0 no, 1 yes]
 $report_mode = 1;
-
 $debug=0;
-
 $j = 0;
 $dt = array(); $y = array(); $x = array(); $p = array(); 
 
@@ -24,11 +18,27 @@ $long1 = $long24 = $long48 = $long72 = $long96 = $long120 = $long144 = 0;
 $pw1 = $pw24 = $pw48 = $pw72 = $pw96 = $pw120 = $pw144 = 0;
 $cnt1 = $cnt24 = $cnt48 = $cnt72 = $cnt96 = $cnt120 = $cnt144 = $cntdatetime = 0;
 
-#$url="http://www.typhoon2000.ph/multi/log.php?name=".$engname."_20".$yr;
-$url="http://localhost/php/extern.txt";
+// Get TC data from DB
+$tclist = array();
+$tclist = query_db($_GET['tcno'],$link);
+
+foreach ($tclist as $key) {
+$tcno = $key['tcno'];
+$yr = substr($tcno,0,2);
+$engname = strtoupper($key['engname']);
+$tcname = mb_convert_encoding($key['chiname'],"utf8","auto");
+$url = "http://www.typhoon2000.ph/multi/data/".$engname.".TXT";	
+
+//$tcname = "天鵝";
+//$engname = "GONI";
+//$tcno = "1510";
+//$url="http://localhost/php/extern.txt";
+
+// Get TC data from internet
 $page = file_get_contents($url);
 $lines = explode("\n",$page);
 	
+// Parse content	
 for ($i=0;$i<=count($lines);$i++){
 
 	// time: (2019-11-07 09:31:53 UTC)
@@ -64,7 +74,7 @@ if ($start == "HKO")
 			$cntdatetime++; $cnt1++;
 		if($debug==1){print "HKO: $yrmn-$arr[1] | $arr[2] N | $arr[3] E | $arr[4]<br>";}
 		}
-
+		
 		// 24H
 		if (preg_match('/\(\+024H\) ([0-9]+.[0-9])N ([0-9]+.[0-9])E (.*)KT/', $lines[$i], $arr)){
 			$lat24 += $arr[1]; 
@@ -752,10 +762,11 @@ print "<a href = $url target=_blank>[Data source]</a>";
 // Super typhoon sustain for
 
 if($debug==1){print "<pre>$content</pre>";}
-//}
+}
 
 
-// ------------- functions ====================
+
+// ------------- functions -------------
 function tcgrade($pw)
 {
 	if ($pw<63){$tcgrade="熱帶低氣壓";}
@@ -891,17 +902,17 @@ function inten_chg_desc($p1,$p2,$t)
 }
 
 
-function query_db($fr,$to,$link)
+function query_db($tcno,$link)
 {
-	if (($fr == "" or $to == "")){
+	if (($tcno == "")){
 		print "Error! input should not be blank";
 		exit;
-	} elseif (($fr < 0 or $fr > 9999) or ($to < 0 or $to > 9999)) 
+	} elseif ($tcno < 0 or $tcno > 9999)
 	{
 		print "Error! input out of range";
 		exit;
 	} else {
-		$dbquery = "select * from tc_list where tcno >= $fr and tcno <= $to;";
+		$dbquery = "select * from tc_list where tcno = $tcno;";
 		$result = mysqli_query($link,$dbquery);
 		$number_of_rows = mysqli_num_rows($result);
 		if ($number_of_rows == 0)
