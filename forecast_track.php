@@ -729,10 +729,10 @@ for ($i=0;$i<=$j-1;$i++){
 			
 		// Current status
 			print "在".$datetime."，<br>"
-			.$pg[$k].$tcname."集結在".$cp_gps['name']."的".$cp_gps['dir']."約".$cp_gps['dis']."公里，".
-			$hk_gps['name']."的".$hk_gps['dir']."約".$hk_gps['dis']."公里，<br>".
+			.$pg[$k].$tcname."集結在".$cp_gps['name']."的".$cp_gps['dir']."約 ".$cp_gps['dis']." 公里，".
+			$hk_gps['name']."的".$hk_gps['dir']."約 ".$hk_gps['dis']." 公里，<br>".
 			"即在北緯 $y[$k] 度，東經 $x[$k] 度附近。<br>
-			估計".$tcname."的中心最高持續風力為時速 $p[$k] 公里，陣風可達時速".$vg." 公里，<br>中心附近最低海平面氣壓約為 ".$pre." hPa。
+			估計".$tcname."的中心最高持續風力為時速 $p[$k] 公里，陣風可達時速 ".$vg." 公里，<br>中心附近最低海平面氣壓約為 ".$pre." hPa。
 			<br><br>			
 			預測在未來 $time_int 小時，".$tcname.$pchg."，並以平均以時速 $speed1 公里向".$direction1."移動，趨向".$area1."。<br><br>";
 			
