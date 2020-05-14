@@ -18,8 +18,9 @@ header('Content-Type: text/html; charset=utf8');
 
           <label>
 
-          <input type="text" name="fr" value="<?php print $_GET['fr'] ?>">
-		  <input type="text" name="to" value="<?php print $_GET['to'] ?>">
+          From <input type="text" name="fr" value="<?php print $_GET['fr'] ?>">
+		  To <input type="text" name="to" value="<?php print $_GET['to'] ?>">
+		  Report <input type="checkbox" name="report_mode" value=1>
 
           </label>
 
@@ -39,7 +40,7 @@ print "Query ".$_POST["fr"] ."-". $_POST["to"] . "<hr>";
 //$tcno = "1929";
 
 // Display report description [0 no, 1 yes]
-$report_mode = 0;
+$report_mode = $_POST["report_mode"];
 
 $debug=0;
 
@@ -184,26 +185,27 @@ for ($i=0;$i<=$j-1;$i++){
 		}
 		
 		// UTC to HKT
-		$datetime = utctohkt($dt[$i]);
+		$datetime = utctohkt($dt[$i],2);
 			
 		print "<tr><td>$datetime</td><td>$y[$i] N</td><td>$x[$i] E</td><td>$p[$i]</td><td>$pg[$i]</td><td>$trend</td><td>".$cp_gps['area']."</td></tr>";
 		
 		// Report description
 		if ($report_mode == 1)
 		{
+			$datetime = utctohkt($dt[$i],1);
 			// Intensity Change
 			if ($pg[$i] != $pg[$i-1])
 			{
 				if ($p[$i] < $p[$i-1])
 				{
-					print "$tcname 在 $datetime 減弱為 $pg[$i]<br>";
+					print "$tcname （英文名 $engname ，國際編號 $tcno ） 在 $datetime 減弱為 $pg[$i]<br>";
 				} else {
 					if ($named == 0)
 					{
-						print "熱帶低氣壓在 $datetime 增強為 $pg[$i]，日本氣象廳把其命名為 $tcname （ $engname ），國際編號 $tcno<br>";
+						print "<br>熱帶低氣壓在 $datetime 增強為 $pg[$i]，日本氣象廳把其命名為 $tcname （ $engname ），國際編號 $tcno<br>";
 						$named = 1;
 					} else {
-						print "$tcname 在 $datetime 增強為 $pg[$i]<br>";
+						print "$tcname （英文名 $engname ，國際編號 $tcno ） 在 $datetime 增強為 $pg[$i]<br>";
 					}
 				}
 			}
@@ -228,10 +230,10 @@ for ($i=0;$i<=$j-1;$i++){
 			
 		// Current status
 			print "<br><br>在".$datetime."，<br>"
-			.$pg[$k].$tcname."集結在".$cp_gps['name']."的".$cp_gps['dir']."約".$cp_gps['dis']."公里，".
-			$hk_gps['name']."的".$hk_gps['dir']."約".$hk_gps['dis']."公里，<br>".
+			.$pg[$k].$tcname."集結在".$cp_gps['name']."的".$cp_gps['dir']."約 ".$cp_gps['dis']." 公里，".
+			$hk_gps['name']."的".$hk_gps['dir']."約　".$hk_gps['dis']." 公里，<br>".
 			"即在北緯 $y[$k] 度，東經 $x[$k] 度附近。<br>
-			估計".$tcname."的中心最高持續風力為時速 $p[$k] 公里，陣風可達時速".$vg."，<br>中心附近最低海平面氣壓約為 ".$pre." hPa。
+			估計".$tcname."的中心最高持續風力為時速 $p[$k] 公里，陣風可達時速 ".$vg." 公里，<br>中心附近最低海平面氣壓約為 ".$pre." hPa。
 			<br><br>			
 			在過去 $time_int 小時，".$tcname.$pchg."，並以平均以時速 $speed 公里向".$direction."移動，趨向".$cp_gps['area']."。<br><br>";
 			
@@ -276,7 +278,7 @@ function tcgrade($pw)
 	return $tcgrade;	
 }
 
-function utctohkt($time)
+function utctohkt($time,$option)
 {
   // 2019112309  
   // 2019010512 
@@ -314,7 +316,8 @@ function utctohkt($time)
  if ($wday == 6){$cwday = "六";}
  if ($wday == 7){$cwday = "日";} 
   
-  $hkt = "$mth 月 $date 日<br>(週$cwday) $hr 時";  
+  if ($option == 1){  $hkt = "（$mth 月 $date 日 星期 $cwday ） $hr 時"; }
+  if ($option == 2){  $hkt = "$mth 月 $date 日<br>週$cwday $hr 時"; }  
 #  $hkt = "$pm$hr時";
   return $hkt;
 }
