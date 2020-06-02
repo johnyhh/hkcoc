@@ -40,7 +40,7 @@ function findcp($x, $y)
 		"long" => 116.7, 
 		"dis" => 0,
 		"dir" => "",
-		"area" => "華海北部"
+		"area" => "南海北部"
 		);  
 		
 	$cp['cp5'] = array( 
