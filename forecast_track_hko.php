@@ -403,19 +403,19 @@ function utctohkt($time)
 
 function format_month($mon)
 {
-  if ($mon == "Jan"){$mon = "01";}
-  if ($mon == "Feb"){$mon = "02";}
-  if ($mon == "Mar"){$mon = "03";}
-  if ($mon == "Apr"){$mon = "04";}
+  if ($mon == "January"){$mon = "01";}
+  if ($mon == "February"){$mon = "02";}
+  if ($mon == "March"){$mon = "03";}
+  if ($mon == "April"){$mon = "04";}
   if ($mon == "May"){$mon = "05";}
-  if ($mon == "Jun"){$mon = "06";}
-  if ($mon == "Jul"){$mon = "07";}
-  if ($mon == "Aug"){$mon = "08";}
-  if ($mon == "Sep"){$mon = "09";}
-  if ($mon == "Oct"){$mon = "10";}
-  if ($mon == "Nov"){$mon = "11";}
-  if ($mon == "Dec"){$mon = "12";}
-  return $mon;
+  if ($mon == "June"){$mon = "06";}
+  if ($mon == "July"){$mon = "07";}
+  if ($mon == "August"){$mon = "08";}
+  if ($mon == "September"){$mon = "09";}
+  if ($mon == "October"){$mon = "10";}
+  if ($mon == "November"){$mon = "11";}
+  if ($mon == "December"){$mon = "12";}
+  return $mon;  
 }
 
 function plusoneday($time)
