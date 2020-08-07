@@ -2,12 +2,9 @@
 	// Flow
 	// 1. Call by wi cgi / cronjob
 	// 2. check if there are n row, delete first row (keep last 7 days record)
-	// 3. get and format wi.txt (single row)   [OK]
+	// 3. get and format wi.txt (single row)
 	// 4. check if they are same with last row, skip
-	// 5. else, append to last line  [OK]
-	
-	// Todo order
-	// 4,2,1
+	// 5. else, append to last line
 
 	// Loading google api library
 	require_once 'google-api-php-client-v2.7.0-PHP5.4/vendor/autoload.php';
@@ -34,20 +31,44 @@
 	{		
 		// Find last row having data
 		$lastrow = sizeof($rows);
-		print "Last row : " . $rows[$lastrow-1][0] . " | " . $rows[$lastrow-1][1];		
+		print "Last row at $lastrow: " . $rows[$lastrow-1][0] . " | " . $rows[$lastrow-1][1]."<br>";	
 
-		// print_r($data);	
+		// Keep one week record
+		if ($lastrow >= 1000)
+		{
+			// Delete first record 
+			$batchUpdateRequest = new \Google_Service_Sheets_BatchUpdateSpreadsheetRequest(array(
+				'requests' => array(
+				  'deleteDimension' => array(
+					  'range' => array(
+						  'sheetId' => 0, // the ID of the sheet/tab shown after 'gid=' in the URL
+						  'dimension' => "ROWS",
+						  'startIndex' => 1, // row number to delete
+						  'endIndex' => 2
+					  )
+				  )    
+				)
+			));
+			$result = $sheets->spreadsheets->batchUpdate($spreadsheetId, $batchUpdateRequest);		
+		}
 
 		list($datetime, $wi) = getwi();
-		print "to be write: ".$datetime." ".$wi."<br>";
+		print "To be write: ".$datetime." ".$wi."<br>";
 		
-		// Append values to last row of range
-		$range = "A1:B";
-		$valueRange= new \Google_Service_Sheets_ValueRange();
-		$valueRange->setValues(["values" => [$datetime, $wi]]); 
-		$conf = ["valueInputOption" => "RAW"];
-		$ins = ["insertDataOption" => "INSERT_ROWS"];
-		$sheets->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $conf, $ins);
+		if (strcmp($datetime,$rows[$lastrow-1][0]) == 0)
+		{
+			print "Skip";
+		}
+		else		
+		{
+			// Append values to last row of range
+			$range = "A1:B";
+			$valueRange= new \Google_Service_Sheets_ValueRange();
+			$valueRange->setValues(["values" => [$datetime, $wi]]); 
+			$conf = ["valueInputOption" => "RAW"];
+			$ins = ["insertDataOption" => "INSERT_ROWS"];
+			$sheets->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $conf, $ins);
+		}
 	}
 	
 function getwi()
